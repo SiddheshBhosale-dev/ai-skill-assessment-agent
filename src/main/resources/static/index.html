@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Resume Matcher</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+            max-width: 900px;
+            margin: auto;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            margin: 5px 5px 10px 0;
+            cursor: pointer;
+        }
+        #result {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        /* 🔥 Progress Bar */
+        #progressContainer {
+            margin: 10px 0;
+        }
+        #progressBar {
+            width: 0%;
+            background: green;
+            color: white;
+            padding: 5px;
+            border-radius: 10px;
+            text-align: center;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+<body>
+
+<h2>🚀 AI Resume Matcher</h2>
+
+<label>Job Description:</label>
+<textarea id="jd"></textarea>
+
+<label>Resume:</label>
+<textarea id="resume"></textarea>
+
+<button onclick="analyze()">Analyze</button>
+<button onclick="startInterview()">Start Interview</button>
+
+<h3>💬 Answer a Question</h3>
+
+<label>Question:</label>
+<textarea id="question"></textarea>
+
+<label>Your Answer:</label>
+<textarea id="answer"></textarea>
+
+<button onclick="evaluateAnswer()">Evaluate Answer</button>
+
+<h3>Result:</h3>
+
+<!-- 🔥 Progress Bar -->
+<div id="progressContainer">
+    <div style="background:#ddd; border-radius:10px;">
+        <div id="progressBar">0%</div>
+    </div>
+</div>
+
+<div id="result"></div>
+
+<h3>📜 History</h3>
+<button onclick="loadHistory()">Load History</button>
+<div id="history"></div>
+
+<script>
+
+    let interviewQuestions = [];
+    let currentQuestionIndex = 0;
+
+    let totalScore = 0;
+    let answeredCount = 0;
+
+    //  ANALYZE
+    async function analyze() {
+        try {
+            const jd = document.getElementById("jd").value;
+            const resume = document.getElementById("resume").value;
+
+            const response = await fetch("http://localhost:8080/api/assess", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    jobDescription: jd,
+                    resume: resume
+                })
+            });
+
+            const data = await response.json();
+
+            let score = data.matchPercentage || 0;
+
+            let color = "red";
+            if (score >= 70) color = "green";
+            else if (score >= 40) color = "orange";
+
+            document.getElementById("result").innerHTML = `
+                <div style="color:${color}; font-weight:bold;">
+                    <h3>📊 Match Score: ${score}%</h3>
+                </div>
+
+                <h4>📌 Job Skills:</h4>
+                <p>${(data.jobSkills || []).join(", ")}</p>
+
+                <h4>📌 Resume Skills:</h4>
+                <p>${(data.resumeSkills || []).join(", ")}</p>
+
+                <h4>✅ Matching Skills:</h4>
+                <ul>
+                    ${(data.matchingSkills || []).map(s => `<li>${s.name} (${s.level || "-"})</li>`).join("")}
+                </ul>
+
+                <h4>❌ Missing Skills:</h4>
+                <ul>
+                    ${(data.missingSkills || []).map(s => `<li>${s}</li>`).join("")}
+                </ul>
+
+                <h4>🧠 Gap Analysis:</h4>
+                <p>${data.gapAnalysis || ""}</p>
+
+                <h4>📚 Learning Plan:</h4>
+                <ul>
+                    ${(data.learningPlan || []).map(lp => `
+                        <li>
+                            <strong>${lp.skill}</strong> - ${lp.time}<br>
+                            Resources: ${lp.resources}
+                        </li>
+                    `).join("")}
+                </ul>
+
+                <h4>⏱ Estimated Time:</h4>
+                <p>${data.estimatedTime || ""}</p>
+            `;
+        } catch (err) {
+            document.getElementById("result").innerHTML = "❌ Error: " + err;
+        }
+    }
+
+    //  INTERVIEW
+    async function startInterview() {
+        try {
+            const jd = document.getElementById("jd").value;
+            const resume = document.getElementById("resume").value;
+
+            const response = await fetch("http://localhost:8080/api/interview", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    jobDescription: jd,
+                    resume: resume
+                })
+            });
+
+            const data = await response.json();
+
+            interviewQuestions = data.questions || [];
+            currentQuestionIndex = 0;
+
+            totalScore = 0;
+            answeredCount = 0;
+
+
+            document.getElementById("progressBar").style.width = "0%";
+            document.getElementById("progressBar").innerText = "0%";
+
+            if (interviewQuestions.length > 0) {
+                document.getElementById("question").value =
+                    interviewQuestions[currentQuestionIndex];
+            }
+
+            document.getElementById("answer").value = "";
+
+            document.getElementById("result").innerHTML = `
+                <h3>🧑‍💻 Interview Started</h3>
+                <p>Answer the question above 👆</p>
+            `;
+
+        } catch (err) {
+            document.getElementById("result").innerHTML = "❌ Error: " + err;
+        }
+    }
+
+    // EVALUATE
+    async function evaluateAnswer() {
+        try {
+            const question = document.getElementById("question").value;
+            const answer = document.getElementById("answer").value;
+
+            const response = await fetch("http://localhost:8080/api/evaluate", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    question: question,
+                    answer: answer
+                })
+            });
+
+            const data = await response.json();
+
+            totalScore += data.score;
+            answeredCount++;
+
+
+            let progress = (answeredCount / interviewQuestions.length) * 100;
+            document.getElementById("progressBar").style.width = progress + "%";
+            document.getElementById("progressBar").innerText =
+                Math.round(progress) + "%";
+
+            document.getElementById("result").innerHTML = `
+                <div class="card">
+                    <h3>🧠 Evaluation Result</h3>
+                    <p><strong>Score:</strong> ${data.score}/10</p>
+                    <p><strong>Feedback:</strong> ${data.feedback}</p>
+                    <p><strong>Improvement:</strong> ${data.improvement}</p>
+                </div>
+            `;
+
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < interviewQuestions.length) {
+                setTimeout(() => {
+                    document.getElementById("question").value =
+                        interviewQuestions[currentQuestionIndex];
+                    document.getElementById("answer").value = "";
+                }, 1200);
+            } else {
+                const avg = (totalScore / answeredCount).toFixed(1);
+
+                let level = "Beginner";
+                if (avg >= 7) level = "Advanced";
+                else if (avg >= 4) level = "Intermediate";
+
+                document.getElementById("result").innerHTML += `
+                    <h3>🎉 Interview Completed!</h3>
+                    <h2>🏆 Final Score: ${avg}/10</h2>
+                    <h2>📊 Level: ${level}</h2>
+                `;
+            }
+
+        } catch (err) {
+            document.getElementById("result").innerHTML =
+                "❌ Error while evaluating answer: " + err;
+        }
+    }
+
+    // HISTORY
+    async function loadHistory() {
+    const response = await fetch("http://localhost:8080/api/history");
+    const data = await response.json();
+
+    let html = "";
+
+    data.reverse().forEach(item => {
+
+        let parsed;
+        try {
+            parsed = JSON.parse(item.result);
+        } catch {
+            parsed = null;
+        }
+
+        html += `
+            <div class="card">
+                <strong>🕒 ${item.createdAt}</strong>
+        `;
+
+        if (parsed) {
+            html += `
+                <p><b>Job Skills:</b> ${parsed.jobSkills.join(", ")}</p>
+                <p><b>Resume Skills:</b> ${parsed.resumeSkills.join(", ")}</p>
+                <p><b>Missing:</b> ${parsed.missingSkills.join(", ")}</p>
+                <p><b>Time:</b> ${parsed.estimatedTime}</p>
+            `;
+        } else {
+            html += `<pre>${item.result}</pre>`;
+        }
+
+        html += `</div>`;
+    });
+
+    document.getElementById("history").innerHTML = html;
+}
+
+</script>
+
+</body>
+</html>
