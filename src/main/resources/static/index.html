@@ -32,7 +32,6 @@
             border-radius: 8px;
         }
 
-        /* 🔥 Progress Bar */
         #progressContainer {
             margin: 10px 0;
         }
@@ -49,7 +48,7 @@
 </head>
 <body>
 
-<h2>🚀 AI Resume Matcher</h2>
+<h2> AI Resume Matcher</h2>
 
 <label>Job Description:</label>
 <textarea id="jd"></textarea>
@@ -60,7 +59,7 @@
 <button onclick="analyze()">Analyze</button>
 <button onclick="startInterview()">Start Interview</button>
 
-<h3>💬 Answer a Question</h3>
+<h3> Answer a Question</h3>
 
 <label>Question:</label>
 <textarea id="question"></textarea>
@@ -72,7 +71,6 @@
 
 <h3>Result:</h3>
 
-<!-- 🔥 Progress Bar -->
 <div id="progressContainer">
     <div style="background:#ddd; border-radius:10px;">
         <div id="progressBar">0%</div>
@@ -118,26 +116,26 @@
 
             document.getElementById("result").innerHTML = `
                 <div style="color:${color}; font-weight:bold;">
-                    <h3>📊 Match Score: ${score}%</h3>
+                    <h3> Match Score: ${score}%</h3>
                 </div>
 
-                <h4>📌 Job Skills:</h4>
+                <h4> Job Skills:</h4>
                 <p>${(data.jobSkills || []).join(", ")}</p>
 
-                <h4>📌 Resume Skills:</h4>
+                <h4> Resume Skills:</h4>
                 <p>${(data.resumeSkills || []).join(", ")}</p>
 
-                <h4>✅ Matching Skills:</h4>
+                <h4> Matching Skills:</h4>
                 <ul>
                     ${(data.matchingSkills || []).map(s => `<li>${s.name} (${s.level || "-"})</li>`).join("")}
                 </ul>
 
-                <h4>❌ Missing Skills:</h4>
+                <h4> Missing Skills:</h4>
                 <ul>
                     ${(data.missingSkills || []).map(s => `<li>${s}</li>`).join("")}
                 </ul>
 
-                <h4>🧠 Gap Analysis:</h4>
+                <h4> Gap Analysis:</h4>
                 <p>${data.gapAnalysis || ""}</p>
 
                 <h4>📚 Learning Plan:</h4>
@@ -154,7 +152,7 @@
                 <p>${data.estimatedTime || ""}</p>
             `;
         } catch (err) {
-            document.getElementById("result").innerHTML = "❌ Error: " + err;
+            document.getElementById("result").innerHTML = " Error: " + err;
         }
     }
 
@@ -193,12 +191,12 @@
             document.getElementById("answer").value = "";
 
             document.getElementById("result").innerHTML = `
-                <h3>🧑‍💻 Interview Started</h3>
-                <p>Answer the question above 👆</p>
+                <h3> Interview Started</h3>
+                <p>Answer the question above </p>
             `;
 
         } catch (err) {
-            document.getElementById("result").innerHTML = "❌ Error: " + err;
+            document.getElementById("result").innerHTML = " Error: " + err;
         }
     }
 
@@ -230,7 +228,7 @@
 
             document.getElementById("result").innerHTML = `
                 <div class="card">
-                    <h3>🧠 Evaluation Result</h3>
+                    <h3> Evaluation Result</h3>
                     <p><strong>Score:</strong> ${data.score}/10</p>
                     <p><strong>Feedback:</strong> ${data.feedback}</p>
                     <p><strong>Improvement:</strong> ${data.improvement}</p>
@@ -253,15 +251,15 @@
                 else if (avg >= 4) level = "Intermediate";
 
                 document.getElementById("result").innerHTML += `
-                    <h3>🎉 Interview Completed!</h3>
-                    <h2>🏆 Final Score: ${avg}/10</h2>
-                    <h2>📊 Level: ${level}</h2>
+                    <h3> Interview Completed!</h3>
+                    <h2> Final Score: ${avg}/10</h2>
+                    <h2> Level: ${level}</h2>
                 `;
             }
 
         } catch (err) {
             document.getElementById("result").innerHTML =
-                "❌ Error while evaluating answer: " + err;
+                "Error while evaluating answer: " + err;
         }
     }
 
